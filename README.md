@@ -62,6 +62,13 @@ You can select one value from below for the param `soure_operator_index`:
 
 **The playbook `02-get-operator-list.yaml` store the operators' names into file `/opt/registry/tmp/<soure_operator_index>_operator_list.json` file.**
 
+You can identify the operator name and index name.
+
+For example, we identify below 2 for operator image download:
+
+- redhat-operator-index
+- quay-operator
+
 ```
 # ansible-playbook 02-get-operator-list.yaml 
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'

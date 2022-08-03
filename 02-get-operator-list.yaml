@@ -16,9 +16,10 @@
     include_role:
       name: operator-list
     vars:
-      soure_operator_index: redhat-operator-index
+      soure_operator_index: certified-operator-index
       registry_user: jinzha1@redhat.com
       disk_dev: /dev/sdc
 
 
 
+      #soure_operator_index: redhat-operator-index
