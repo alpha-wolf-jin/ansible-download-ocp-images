@@ -141,5 +141,4 @@ For example, we identify below 2 for operator image download:
 ```
 
 > Quay is available at https://quay03.example.opentlc.com:8443 with credentials
-
-> The credentials is store in <quay_install_home>/quay_password
+> The credentials is stored in <quay_install_home>/quay_password
