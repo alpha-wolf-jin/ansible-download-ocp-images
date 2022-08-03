@@ -22,9 +22,3 @@
 
 
 
-      #operator_list:
-      #- local-storage-operator
-      #- mcg-operator
-      #- ocs-operator
-      #- odf-csi-addons-operator
-      #- odf-operator
