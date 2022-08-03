@@ -2,28 +2,6 @@
 ## tasks file for mirroring-operator
 ##
 
-#- name: update pull-secret
-#  ansible.builtin.shell: |
-#    oc get secret pull-secret -n openshift-config --template='{{ '{{' }} index .data ".dockerconfigjson" | base64decode {{ '}}' }}' > {{ cluster_home }}/current-pull-secret.json
-#    jq -c --argjson var "$(jq .auths {{ reg_creds }})" '.auths += $var' ./current-pull-secret.json > {{ cluster_home }}/merged_pullsecret.json
-#    oc set data secret/pull-secret --from-file=.dockerconfigjson={{ cluster_home }}/merged_pullsecret.json -n openshift-config
-#  args:
-#    chdir: "{{ cluster_home }}"
-#  register: result
-#
-#- debug: var=result
-
-
-#- name: update mirror rootCA
-#  ansible.builtin.shell: |
-#    oc create configmap registry-cas -n openshift-config \
-#    --from-file={{ dest_registry }}..{{ dest_registry_port }}={{ quay_home }}/quay-rootCA/rootCA.pem
-#    oc patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"registry-cas"}}}' --type=merge
-#  args:
-#    chdir: "{{ cluster_home }}"
-#  register: result
-# 
-#- debug: var=result
 
 - name: Disable Catalog 
   ansible.builtin.shell: |
@@ -226,45 +204,53 @@
 #
 #- debug: var=result
 
-- name: Morring cluster images to local disk
-  block:
-  - name: Mirror the cluster images to local disk
-    ansible.builtin.shell: |
-      oc adm release mirror -a {{reg_creds}}  \
-      --to-dir={{REMOVABLE_MEDIA_PATH}}/mirror \
-      quay.io/{{PRODUCT_REPO}}/{{RELEASE_NAME}}:{{OCP_RELEASE}}-{{ARCHITECTURE}} | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_cluster.log"
-    args:
-      chdir: "{{ mirror_home }}"
-    register: result
-    until: 
-    - "'Configmap signature file' in result.stdout"
-    - "'Success' in result.stdout"
-    retries: 3
-    delay: 15
-  
-  - debug: var=result
-  when: mirroring_cluster_images
+#- name: Morring cluster images to local disk
+#  block:
+#  - name: Mirror the cluster images to local disk
+#    ansible.builtin.shell: |
+#      oc adm release mirror -a {{reg_creds}}  \
+#      --to-dir={{REMOVABLE_MEDIA_PATH}}/mirror \
+#      quay.io/{{PRODUCT_REPO}}/{{RELEASE_NAME}}:{{OCP_RELEASE}}-{{ARCHITECTURE}} | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_cluster.log"
+#    args:
+#      chdir: "{{ mirror_home }}"
+#    register: result
+#    until: 
+#    - "'Configmap signature file' in result.stdout"
+#    - "'Success' in result.stdout"
+#    retries: 3
+#    delay: 15
+#  
+#  - debug: var=result
+#  when: mirroring_cluster_images
+#
+#
+#- name: Morring Operators' images to local disk
+#  block:
+#  - name: Mirror the cluster images to local disk
+#    ansible.builtin.shell: |
+#      oc adm catalog mirror \
+#      "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}" \
+#      file:///local/index -a "{{ reg_creds }}" --index-filter-by-os='linux/amd64' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_operators.log"
+#    args:
+#      chdir: "{{ mirror_home }}"
+#    register: result
+#    until: 
+#    - "'wrote mirroring manifests ' in result.stdout"
+#    - "'To upload local images to a registry' in result.stdout"
+#    retries: 3
+#    delay: 15
+#  
+#  - debug: var=result
+#  when: mirroring_operator_images
+#
 
-
-- name: Morring Operators' images to local disk
-  block:
-  - name: Mirror the cluster images to local disk
-    ansible.builtin.shell: |
-      oc adm catalog mirror \
-      "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}" \
-      file:///local/index -a "{{ reg_creds }}" --index-filter-by-os='linux/amd64' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_operators.log"
-    args:
-      chdir: "{{ mirror_home }}"
-    register: result
-    until: 
-    - "'wrote mirroring manifests ' in result.stdout"
-    - "'To upload local images to a registry' in result.stdout"
-    retries: 3
-    delay: 15
-  
-  - debug: var=result
-  when: mirroring_operator_images
-
+- name: Update CA & Create Auth file for Quay
+  ansible.builtin.shell: |
+    update-ca-trust 
+    podman login --authfile "{{ reg_creds }}" -u {{ quay_user }} -p {{ quay_pwd }} {{ dest_registry }}:{{ dest_registry_port }}
+    podman login --authfile "{{ reg_creds }}" -u {{ registry_user }} -p {{ registry_pwd }} registry.redhat.io
+  args:
+    chdir: "{{ quay_install_home }}"
 
 - name: Upload the Operators' images to quay mirror registry from local disk
   block:
