@@ -1,0 +1,116 @@
+---
+## tasks file for mirroring-operator
+##
+#- name: 01 install ansible collection
+#  ansible.builtin.shell: |
+#    ansible-galaxy collection install community.general
+#    ansible-galaxy collection install ansible.posix
+#    ansible-galaxy collection install containers.podman
+#
+- name: install RPM
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: latest
+  loop:
+  - podman
+  - openssl
+
+- name: Create a volume group for Quay
+  community.general.lvg:
+    vg: quay
+    pvs: "{{ disk_dev }}"
+
+- name: Create a logical volume for Quay
+  community.general.lvol:
+    vg: quay
+    lv: lv00
+    size: 100%VG
+    force: yes
+
+- name: Create a xfs filesystem for Quay
+  community.general.filesystem:
+    fstype: xfs
+    dev: /dev/quay/lv00
+
+- name: Mount up device for Quay
+  ansible.posix.mount:
+    path: "{{ base_home }}"
+    src: /dev/mapper/quay-lv00
+    fstype: xfs
+    opts: noatime
+    state: mounted
+
+- name: Create dirs for Quay
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+  loop:
+  - "{{ quay_home }}"
+  - "{{ base_home }}/tmp"
+  - "{{ quay_install_home }}"
+  - "{{ REMOVABLE_MEDIA_PATH }}"
+
+
+
+- name: Download commands tar files
+  ansible.builtin.get_url:
+    url: "{{ item.url_name }}"
+    dest: "{{ item.file_name }}"
+  loop:
+  - url_name: "{{ grpcurl_download_url }}"
+    file_name: "{{ base_home }}/tmp/{{ grpcurl_download_url | basename }}"
+  - url_name: "{{ opm_download_url }}"
+    file_name: "{{ base_home }}/tmp/{{ opm_download_url | basename }}"
+  - url_name: "{{ oc_download_url }}"
+    file_name: "{{ base_home }}/tmp/{{ oc_download_url | basename }}"
+  - url_name: https://www.redhat.com/security/data/55A34A82.txt
+    file_name: /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-isv
+
+- name: Extract commands from tar files
+  ansible.builtin.unarchive:
+    src: "{{ item.file_name }}"
+    dest: "{{ item.dest_name }}"
+  loop:
+  - dest_name: /usr/local/sbin
+    file_name: "{{ base_home }}/tmp/{{ grpcurl_download_url | basename }}"
+  - dest_name: /usr/local/sbin
+    file_name: "{{ base_home }}/tmp/{{ opm_download_url | basename }}"
+  - dest_name: /usr/local/sbin
+    file_name: "{{ base_home }}/tmp/{{ oc_download_url | basename }}"
+
+- name: Copy the policy.json
+  ansible.builtin.copy:
+    src: policy.json
+    dest: /etc/containers/policy.json
+    owner: root
+    group: root
+    mode: '0644'
+
+
+- name: "Pull image {{ official_indexes }}:{{ ocp_version }}"
+  ansible.builtin.shell: |
+    podman login -u {{ registry_user }} -p {{ registry_pwd }} registry.redhat.io
+    podman pull registry.redhat.io/redhat/{{ soure_operator_index }}:{{ ocp_version }} 
+
+- name: "Run container {{ official_indexes }}:{{ ocp_version }}"
+  ansible.builtin.shell: |
+    podman login -u {{ registry_user }} -p {{ registry_pwd }} registry.redhat.io
+    podman run -p50051:50051 -it registry.redhat.io/redhat/{{ soure_operator_index }}:{{ ocp_version }} 
+  async: 10
+  poll: 0
+
+
+- name: Wait for service to be ready
+  wait_for:
+    port: 50051
+    host: 127.0.0.1
+    connect_timeout: 3
+    delay: 3
+    timeout: 300
+
+- name: Retrieve Operator List 
+  ansible.builtin.shell: |
+    grpcurl -plaintext localhost:50051 api.Registry/ListPackages  >{{ base_home }}/tmp/{{ soure_operator_index }}_operator_list.txt
+  register: result
+

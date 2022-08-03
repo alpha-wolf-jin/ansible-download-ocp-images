@@ -1,0 +1,93 @@
+---
+# tasks file for mirroring-operator
+#
+- name: 01 prepare storage for quay
+  ansible.builtin.shell: |
+    ansible-galaxy collection install community.general
+    ansible-galaxy collection install ansible.posix
+    mkdir -p {{ quay_home }}
+    mkdir -p {{ quay_install_home }}
+
+- name: Create a volume group for Quay
+  community.general.lvg:
+    vg: resizableVG
+    pvs: {{ disk_dev }}
+
+- name: Create a logical volume of 512m
+  community.general.lvol:
+    vg: quay
+    lv: lv00
+    size: 100%FREE
+
+- name: Create a ext2 filesystem on /dev/sdb1
+  community.general.filesystem:
+    fstype: xfs
+    dev: /dev/quay/lv00
+
+- name: Mount up device by UUID
+  ansible.posix.mount:
+    path: /home
+    src: /dev/mapper/quay-lv00
+    fstype: xfs
+    opts: noatime
+    state: present
+
+
+    pvcreate {{ disk_dev }}
+    vgcreate quay {{ disk_dev }}
+    lvcreate -l 100%FREE -n lv00 quay
+    mkfs.xfs /dev/quay/lv00
+    mkdir /opt/registry
+    echo "/dev/mapper/quay-lv00 /opt/registry  xfs rw,relatime,seclabel,attr2,inode64,logbufs=8,logbsize=32k,noquota 0 0" >> /etc/fstab 
+    mount -a
+    hostnamectl set-hostname quay.example.opentlc.com
+    mkdir -p {{ quay_home }}
+    mkdir -p {{ quay_install_home }}
+    yum install podman openssl -y
+
+- name: 01 prepare the commands and gpg file
+  ansible.builtin.shell: |
+    set -o pipefail
+    wget https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
+    tar xvf mirror-registry.tar.gz
+    ./mirror-registry install --quayHostname $(hostname -f) --quayRoot  /opt/registry/quay >./quay.log 
+    cat ./quay.log | grep 'Quay is available at' | awk -F'init,' '{print $2}' | tr -d "[:space:]" | tr -d ")$" >./access
+    cp -p  /opt/registry/quay/quay-rootCA/rootCA.pem /etc/pki/ca-trust/source/anchors/.
+    update-ca-trust 
+  args:
+    chdir: "{{ quay_install_home }}"
+
+
+- name: clean and create aro dir
+  ansible.builtin.shell: |
+    rm -rf {{ base_home }}
+    mkdir -p {{ base_home }}
+
+- name: 01 prepare the commands and gpg file
+  ansible.builtin.shell: |
+    rm -f $(which grpcurl)
+    wget "{{ grpcurl_download_url }}"
+    tar xvf "{{ grpcurl_download_url | basename }}"  -C /usr/local/sbin
+    rm -f $(which opm)
+    wget "{{ opm_download_url }}" 
+    tar xvf "{{ opm_download_url | basename }}" -C /usr/local/sbin
+    curl -s -o /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-isv https://www.redhat.com/security/data/55A34A82.txt
+  args:
+    chdir: "{{ base_home }}"
+
+- name: 02 Copy the policy.json
+  ansible.builtin.copy:
+    src: policy.json
+    dest: /etc/containers/policy.json
+    owner: root
+    group: root
+    mode: '0644' 
+
+- debug:
+    msg: "{{ operator_list | join(',') }}"
+
+- name: 01 prepare the commands and gpg file
+  ansible.builtin.shell: |
+    podman login registry.redhat.io --authfile=/root/auth.json
+    podman rmi {{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ storage-operator-index }}:{{ ocp_version }}
+    opm index prune -f registry.redhat.io/redhat/{{ soure_operator_index }}:{{ ocp_version }} -p {{ operator_list | join(',') }} -t {{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ storage-operator-index }}:{{ ocp_version }}

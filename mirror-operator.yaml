@@ -1,0 +1,36 @@
+---
+- hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+
+  vars_prompt:
+
+    - name: registry_pwd
+      prompt: What is your password for registry.redhat.io?
+
+  tasks:
+
+  - name: mirroring-operator
+    include_role:
+      name: mirroring-operator
+    vars:
+      operator_list:
+      - quay-operator
+      registry_user: jinzha1@redhat.com
+      dest_registry: quay02.example.opentlc.com
+      soure_operator_index: redhat-operator-index
+      new_operator_index: storage-operator-index
+      mirror_home: /opt/registry/mirror-storage-operator
+      mirroring_operator_images: true
+      uploading_operator_images: true
+      prepare_cmds: false
+
+
+
+      #operator_list:
+      #- local-storage-operator
+      #- mcg-operator
+      #- ocs-operator
+      #- odf-csi-addons-operator
+      #- odf-operator

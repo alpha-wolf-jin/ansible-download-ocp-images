@@ -1,0 +1,279 @@
+---
+## tasks file for mirroring-operator
+##
+#- name: 01 install ansible collection
+#  ansible.builtin.shell: |
+#    ansible-galaxy collection install community.general
+#    ansible-galaxy collection install ansible.posix
+#    ansible-galaxy collection install containers.podman
+#
+
+#- name: Create dirs for Quay
+#  ansible.builtin.file:
+#    path: "{{ item }}"
+#    state: directory
+#    recurse: yes
+#  loop:
+#  - "{{ quay_home }}"
+#  - "{{ quay_install_home }}"
+#  - "{{ REMOVABLE_MEDIA_PATH }}"
+
+#- name: Install RPM
+#  ansible.builtin.yum:
+#    name: "{{ item }}"
+#    state: latest
+#  loop:
+#  - podman
+#  - openssl
+#
+
+- name: Retrieve quay user & password from file
+  set_fact:
+    quay_user: init
+    quay_pwd: "{{ lookup('file', quay_install_home + '/quay_password') | regex_replace('^init\\s+\\:\\s+(.*)$', '\\1') }}"
+
+
+- name: Create dir for mirroring
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+  loop:
+  - "{{ mirror_home }}"
+
+
+- name: Update CA & Create Auth file for Quay
+  ansible.builtin.shell: |
+    podman login --authfile "{{ reg_creds }}" -u {{ quay_user }} -p {{ quay_pwd }} {{ dest_registry }}:{{ dest_registry_port }}
+    podman login --authfile "{{ reg_creds }}" -u {{ registry_user }} -p {{ registry_pwd }} registry.redhat.io
+  args:
+    chdir: "{{ mirror_home }}"
+
+- name: prepare commands
+  block:
+  - name: Download mirror registry
+    ansible.builtin.get_url:
+      url: "{{ item.url_name }}"
+      dest: "{{ item.file_name }}"
+    loop:
+    - url_name: "{{ grpcurl_download_url }}"
+      file_name: "{{ quay_install_home }}/{{ grpcurl_download_url | basename }}"
+    - url_name: "{{ opm_download_url }}"
+      file_name: "{{ quay_install_home }}/{{ opm_download_url | basename }}"
+    - url_name: "{{ oc_download_url }}"
+      file_name: "{{ quay_install_home }}/{{ oc_download_url | basename }}"
+    - url_name: https://www.redhat.com/security/data/55A34A82.txt
+      file_name: /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-isv
+  
+  - name: Extract tar file for mirror registry installation
+    ansible.builtin.unarchive:
+      src: "{{ item.file_name }}"
+      dest: "{{ item.dest_name }}"
+    loop:
+    - dest_name: /usr/local/sbin
+      file_name: "{{ quay_install_home }}/{{ grpcurl_download_url | basename }}"
+    - dest_name: /usr/local/sbin
+      file_name: "{{ quay_install_home }}/{{ opm_download_url | basename }}"
+    - dest_name: /usr/local/sbin
+      file_name: "{{ quay_install_home }}/{{ oc_download_url | basename }}"
+  
+  - name: Copy the policy.json
+    ansible.builtin.copy:
+      src: policy.json
+      dest: /etc/containers/policy.json
+      owner: root
+      group: root
+      mode: '0644'
+  
+  - name: Update CA & Create Auth file for Quay
+    ansible.builtin.shell: |
+      podman login --authfile "{{ reg_creds }}" -u {{ quay_user }} -p {{ quay_pwd }} {{ dest_registry }}:{{ dest_registry_port }}
+      podman login --authfile "{{ reg_creds }}" -u {{ registry_user }} -p {{ registry_pwd }} registry.redhat.io
+    args:
+      chdir: "{{ mirror_home }}"
+
+  when: prepare_cmds 
+  
+- name: Remove an image
+  containers.podman.podman_image:
+    name: "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}"
+    state: absent
+
+- name: Trailor Operator index 01 - login
+  ansible.builtin.shell: |
+    podman login -u {{ registry_user }} -p {{ registry_pwd }}   registry.redhat.io
+  args:
+    chdir: "{{ mirror_home }}"
+  register: result
+  until: 
+    - result.rc == 0
+  retries: 3
+  delay: 15
+ 
+ 
+- debug: var=result
+
+- name: Trailor Operator index 02 - prunn
+  ansible.builtin.shell: |
+    opm index prune -f "registry.redhat.io/redhat/{{ soure_operator_index }}:{{ ocp_version }}" -p {{ operator_list | join(',') }} -t "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}"
+  args:
+    chdir: "{{ mirror_home }}"
+  register: result
+  until: 
+    - result.rc == 0
+  retries: 3
+  delay: 15
+ 
+ 
+- debug: var=result
+
+
+- name: Trailor Operator index 03 - save
+  ansible.builtin.shell: |
+    rm -f {{ new_operator_index }}.tar
+    podman save -o {{ new_operator_index }}.tar "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}"
+  args:
+    chdir: "{{ mirror_home }}"
+  register: result
+  until: 
+    - result.rc == 0
+  retries: 3
+  delay: 15
+ 
+- debug: var=result
+
+- name: Build and push an image to multiple registries with separate parameters
+  containers.podman.podman_image:
+    name: "{{ new_operator_index }}"
+    tag: "{{ ocp_version }}"
+    push: yes
+    auth_file: "{{ reg_creds }}"
+    push_args:
+      dest: "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/"
+  register: result
+  until: 
+    - result.changed
+    - not result.failed
+  retries: 3
+  delay: 15
+
+- debug: var=result
+
+- name: Tail Operator index
+  ansible.builtin.shell: |
+    oc adm catalog mirror "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}" "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror"  -a "{{ reg_creds }}" --index-filter-by-os='linux/amd64' --manifests-only
+  args:
+    chdir: "{{ mirror_home }}"
+  register: result
+  until: 
+    - result.rc == 0
+  retries: 3
+  delay: 15
+ 
+
+- debug: var=result
+
+
+- name: Extract Password from the installation log
+  register: result
+  args:
+    stdin: |
+      import re
+      search_pattern = search_pattern = "^wrote\s+mirroring\s+manifests\s+to\s+(.+?)$"
+      for line in {{ result.stdout_lines }}:
+        if re.search(search_pattern, line):
+          f = re.search(search_pattern, line).group(1).strip()
+          print(f)
+  command: /usr/bin/python3
+
+- debug:
+    msg: "{{ result.stdout }}"
+
+- name: Update catalogSource.yaml
+  ansible.builtin.replace:
+    path: "{{ mirror_home }}/{{ result.stdout }}/catalogSource.yaml"
+    regexp: '^(.*)olm-mirror\/olm\-mirror\-(.*)$'
+    replace: '\1olm-mirror/\2'
+
+
+- name: Copy files from foo to bar
+  ansible.builtin.copy:
+    src:  "{{ mirror_home }}/{{ result.stdout }}/"
+    dest: "{{ mirror_home }}/manifests-{{ new_operator_index }}"
+
+
+- name: Morring cluster images to local disk
+  block:
+  - name: Dry-RUN
+    ansible.builtin.shell: |
+      oc adm release mirror -a {{reg_creds}}  \
+      --from=quay.io/{{PRODUCT_REPO}}/{{RELEASE_NAME}}:{{OCP_RELEASE}}-{{ARCHITECTURE}} \
+      --to={{dest_registry}}:{{dest_registry_port}}/{{LOCAL_REPOSITORY}} \
+      --to-release-image={{dest_registry}}:{{dest_registry_port}}/{{LOCAL_REPOSITORY}}:{{OCP_RELEASE}}-{{ARCHITECTURE}} --dry-run | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/dry-run.log"
+    args:
+      chdir: "{{ mirror_home }}"
+    register: result
+    until: 
+      - result.rc == 0
+    retries: 3
+    delay: 15
+ 
+  
+  - debug: var=result
+
+  - name: Mirror the cluster images to local disk
+    ansible.builtin.shell: |
+      oc adm release mirror -a {{reg_creds}}  \
+      --to-dir={{REMOVABLE_MEDIA_PATH}}/mirror \
+      quay.io/{{PRODUCT_REPO}}/{{RELEASE_NAME}}:{{OCP_RELEASE}}-{{ARCHITECTURE}} | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_cluster.log"
+    args:
+      chdir: "{{ mirror_home }}"
+    register: result
+    until: 
+    - "'Configmap signature file' in result.stdout"
+    - "'Success' in result.stdout"
+    retries: 3
+    delay: 15
+  
+  - debug: var=result
+  when: mirroring_cluster_images
+
+
+- name: Morring Operators' images to local disk
+  block:
+  - name: Mirror the cluster images to local disk
+    ansible.builtin.shell: |
+      oc adm catalog mirror \
+      "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}" \
+      file:///local/index -a "{{ reg_creds }}" --index-filter-by-os='linux/amd64' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_operators.log"
+    args:
+      chdir: "{{ mirror_home }}"
+    register: result
+    until: 
+    - "'wrote mirroring manifests ' in result.stdout"
+    - "'To upload local images to a registry' in result.stdout"
+    retries: 3
+    delay: 15
+  
+  - debug: var=result
+  when: mirroring_operator_images
+
+
+- name: Upload the Operators' images to quay mirror registry from local disk
+  block:
+  - name: Mirror the cluster images to local disk
+    ansible.builtin.shell: |
+      oc adm catalog mirror \
+      file://local/index/olm-mirror/{{ new_operator_index }}:{{ ocp_version }} \
+      {{ dest_registry }}:{{ dest_registry_port }}/olm-mirror \
+      -a {{ reg_creds }} --index-filter-by-os='.*' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/upload_operators.log"
+    args:
+      chdir: "{{ mirror_home }}"
+    register: result
+    until: 
+    - "'wrote mirroring manifests to ' in result.stdout"
+    retries: 3
+    delay: 15
+  
+  - debug: var=result
+  when: uploading_operator_images

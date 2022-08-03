@@ -1,0 +1,32 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+
+  - set_fact:
+      contents: "{{ lookup('file', '/opt/registry/install/test') | string }}"
+            
+  - name: test
+    register: results
+    args:
+      stdin: |
+        import re
+        s = "wrote mirroring manifests to manifests-storage-operator-index-1657968071"
+        search_pattern = search_pattern = "^wrote\s+mirroring\s+manifests\s+to\s+(.+?)$"
+        if re.search(search_pattern, s):
+            f = re.search(search_pattern, s).group(1).strip()
+            print(f)     
+    command: /usr/bin/python3
+  - debug:
+      msg: "{{ results.stdout }}"
+
+
+  - debug:
+      msg: "{{ contents | regex_replace('^.*init\\,\\s+(.*)\\)\\s+.*$', '\\1') }}"
+      #msg: "{{ contents | regex_replace('^.*init,\b+.*?\\)\b*$', '\\1') }}"
+
+#        s = "credentials (init, Pp2i6s8qb9cvU5DeVd7u4GMCj3W0F1KB) "
+#        s = "{{ contents }}"
+#        search_pattern = '\(init, ' + '(.+?)\)'
+#        f = re.search(search_pattern, s.group(1).strip()
+#        print(f)
+#

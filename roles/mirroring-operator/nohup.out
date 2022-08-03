@@ -1,0 +1,28 @@
+secret "rook-ceph-mon" deleted
+cephcluster.ceph.rook.io "ocs-storagecluster-cephcluster" deleted
+storagesystem.odf.openshift.io "ocs-storagecluster-storagesystem" deleted
+storagecluster.ocs.openshift.io "ocs-storagecluster" deleted
+csidriver.storage.k8s.io "openshift-storage.rbd.csi.ceph.com" deleted
+csidriver.storage.k8s.io "openshift-storage.cephfs.csi.ceph.com" deleted
+configmap "rook-ceph-mon-endpoints" deleted
+storagecluster.ocs.openshift.io "ocs-storagecluster" deleted
+Error from server (NotFound): storageclusters.ocs.openshift.io "storagesystems" not found
+Error from server (NotFound): storageclusters.ocs.openshift.io "ocs-storagecluster-storagesystem" not found
+storagesystem.odf.openshift.io "ocs-storagecluster-storagesystem" deleted
+secret "rook-ceph-mon" deleted
+storagesystem.odf.openshift.io "ocs-storagecluster-storagesystem" deleted
+storagecluster.ocs.openshift.io "ocs-storagecluster" deleted
+cephcluster.ceph.rook.io "ocs-storagecluster-cephcluster" deleted
+configmap "rook-ceph-mon-endpoints" deleted
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout
+Unable to connect to the server: dial tcp 52.186.41.77:6443: i/o timeout

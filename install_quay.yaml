@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - name: mirroring-operator
+    include_role:
+      name: install_quay
+    vars:
+      dest_registry: quay02.example.opentlc.com

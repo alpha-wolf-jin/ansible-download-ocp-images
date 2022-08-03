@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+
+
+  tasks:
+
+  - name: mirroring-operator
+    include_role:
+      name: update-cluster
+    vars:
+      cluster_home: /root/aro
+

@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+
+  vars_prompt:
+
+    - name: registry_pwd
+      prompt: What is your password for registry.redhat.io?
+
+  tasks:
+
+
+  - name: get full operator list
+    include_role:
+      name: operator-list
+    vars:
+      soure_operator_index: redhat-operator-index
+      registry_user: jinzha1@redhat.com
+      disk_dev: /dev/sdc
+
+
+
+      #operator_list:
+      #- local-storage-operator
+      #- mcg-operator
+      #- ocs-operator
+      #- odf-csi-addons-operator
+      #- odf-operator

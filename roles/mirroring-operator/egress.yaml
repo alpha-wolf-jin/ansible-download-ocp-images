@@ -1,0 +1,31 @@
+apiVersion: network.openshift.io/v1
+kind: EgressNetworkPolicy
+metadata:
+  name: default
+spec:
+  egress: 
+  - type: Allow
+    to:
+      cidrSelector: 172.30.0.0/16
+  - type: Allow
+    to:
+      cidrSelector: 10.128.0.0/14
+  - type: Allow
+    to:
+      cidrSelector: 52.186.41.77/32
+  - type: Allow
+    to:
+      cidrSelector: 20.81.59.208/32
+  - type: Allow
+    to:
+      cidrSelector: 20.55.122.255/32
+  - type: Allow
+    to:
+      dnsName: quay.example.opentlc.com
+  - type: Allow
+    to:
+      dnsName: api.aro.example.opentlc.com
+  - type: Deny
+    to:
+      cidrSelector: 0.0.0.0/0
+

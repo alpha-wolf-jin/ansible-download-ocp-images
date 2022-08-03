@@ -1,0 +1,40 @@
+time="2022-07-30T14:34:29Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+Trying to pull registry.redhat.io/redhat/redhat-operator-index:v4.10...
+Getting image source signatures
+Checking if image destination supports signatures
+Copying blob sha256:6d79f48c19c4164cf5a475b65676e790a75de840a6634426014787cde238e667
+Copying blob sha256:e9915e1e45679a8b2a3f16e25f78e33df9b03bcbebeaca7c2441f9ef3184d348
+Copying blob sha256:5b006746ba8eaf712f0316f3d3a00714a9cc4c0346c8131efdcc1400e0824842
+Copying blob sha256:086d8ed3db6faa5e42c9b968a672c5d36f7fbd585f23e863c00ea15c9ada93b6
+Copying blob sha256:5404028500215710501788eb8e9805cb33d48f754148d470b2cc87ba1f2e42ae
+Copying blob sha256:0a73835e2b863a011b3fd08f6d8171c8280598843356c1ee7ceb4664e8fa3fb5
+Copying config sha256:46d43cab0b46624800c750c3ef17e3539de5db5ed017cd1a67849c6cea05e23a
+Writing manifest to image destination
+Storing signatures
+[33mWARN[0m[0000] [1;33mDEPRECATION NOTICE:
+Sqlite-based catalogs and their related subcommands are deprecated. Support for
+them will be removed in a future release. Please migrate your catalog workflows
+to the new file-based catalog format.[0m 
+[33mWARN[0m[0000] unable to set termination log path            [33merror[0m="open /dev/termination-log: permission denied"
+[36mINFO[0m[0000] Keeping server open for infinite seconds      [36mdatabase[0m=/database/index.db [36mport[0m=50051
+[36mINFO[0m[0000] serving registry                              [36mdatabase[0m=/database/index.db [36mport[0m=50051
+[36mINFO[0m[0044] shutting down...                              [36mdatabase[0m=/database/index.db [36mport[0m=50051
+time="2022-07-30T14:35:30Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+[33mWARN[0m[0000] [1;33mDEPRECATION NOTICE:
+Sqlite-based catalogs and their related subcommands are deprecated. Support for
+them will be removed in a future release. Please migrate your catalog workflows
+to the new file-based catalog format.[0m 
+[33mWARN[0m[0000] unable to set termination log path            [33merror[0m="open /dev/termination-log: permission denied"
+[36mINFO[0m[0000] Keeping server open for infinite seconds      [36mdatabase[0m=/database/index.db [36mport[0m=50051
+[36mINFO[0m[0000] serving registry                              [36mdatabase[0m=/database/index.db [36mport[0m=50051
+[36mINFO[0m[0021] shutting down...                              [36mdatabase[0m=/database/index.db [36mport[0m=50051
+time="2022-07-30T14:36:04Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+
+[33mWARN[0m[0000] [1;33mDEPRECATION NOTICE:
+Sqlite-based catalogs and their related subcommands are deprecated. Support for
+them will be removed in a future release. Please migrate your catalog workflows
+to the new file-based catalog format.[0m 
+[33mWARN[0m[0000] unable to set termination log path            [33merror[0m="open /dev/termination-log: permission denied"
+[36mINFO[0m[0000] Keeping server open for infinite seconds      [36mdatabase[0m=/database/index.db [36mport[0m=50051
+[36mINFO[0m[0000] serving registry                              [36mdatabase[0m=/database/index.db [36mport[0m=50051
+[36mINFO[0m[0158] shutting down...                              [36mdatabase[0m=/database/index.db [36mport[0m=50051

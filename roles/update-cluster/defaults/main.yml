@@ -1,0 +1,48 @@
+---
+# defaults file for mirroring-operator
+
+disk_dev: /dev/sdc
+
+base_home: /opt/registry
+
+quay_home: "{{ base_home }}/quay"
+
+quay_install_home: "{{ base_home }}/install"
+
+mirror_home: "{{ base_home }}/mirror-storage"
+
+mirror_registry_download_url: https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
+
+oc_download_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.10.11/openshift-client-linux-4.10.11.tar.gz
+
+grpcurl_download_url: https://github.com/fullstorydev/grpcurl/releases/download/v1.8.6/grpcurl_1.8.6_linux_x86_64.tar.gz
+
+opm_download_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-4.10/opm-linux.tar.gz
+
+reg_creds: '/root/pull-secet.txt'
+
+ocp_version: v4.10
+
+soure_operator_index: redhat-operator-index
+
+dest_registry: quay.example.opentlc.com
+
+dest_registry_port: 8443
+
+new_operator_index: storage-operator-index
+
+OCP_RELEASE: 4.10.11
+#LOCAL_REGISTRY='quay.example.opentlc.com:8443'
+LOCAL_REPOSITORY: 'ocp/openshift4'
+PRODUCT_REPO: 'openshift-release-dev'
+#$ LOCAL_SECRET_JSON='/home/azureuser/pull-secet.txt'
+RELEASE_NAME: "ocp-release"
+ARCHITECTURE: x86_64
+REMOVABLE_MEDIA_PATH: /opt//registry/media
+
+mirroring_cluster_images: false
+mirroring_operator_images: false
+uploading_operator_images: false
+
+cluster_home: /root/aro
+
