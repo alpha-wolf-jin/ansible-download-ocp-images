@@ -119,6 +119,8 @@ For example, we identify below 2 for operator image download:
 > `dest_registry` is the target mirror registry server hostname
 
 
+**Run 03-install_quay.yaml**
+
 ```
 # cat 03-install_quay.yaml 
 ---
@@ -137,3 +139,7 @@ For example, we identify below 2 for operator image download:
 
 # ansible-playbook 03-install_quay.yaml 
 ```
+
+> Quay is available at https://quay03.example.opentlc.com:8443 with credentials
+
+> The credentials is store in <quay_install_home>/quay_password
