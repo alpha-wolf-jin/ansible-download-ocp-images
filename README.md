@@ -142,3 +142,43 @@ For example, we identify below 2 for operator image download:
 
 > Quay is available at https://quay03.example.opentlc.com:8443 with the credentials
 > stored in <quay_install_home>/quay_password
+
+# Download Operator Images
+
+```
+# cat 04-mirror-operator.yaml 
+---
+- hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+
+  vars_prompt:
+
+    - name: registry_pwd
+      prompt: What is your password for registry.redhat.io?
+
+  tasks:
+
+  - name: mirroring-operator
+    include_role:
+      name: mirroring-operator
+    vars:
+      operator_list:
+      - quay-operator
+      registry_user: jinzha1@redhat.com
+      dest_registry: quay03.example.opentlc.com
+      soure_operator_index: redhat-operator-index
+      new_operator_index: storage-operator-index
+      mirror_home: /opt/registry/mirror-storage-operator
+      mirroring_operator_images: true
+      uploading_operator_images: true
+      prepare_cmds: false
+
+# ansible-playbook 04-mirror-operator.yaml 
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+What is your password for registry.redhat.io?: 
+
+````
+
+

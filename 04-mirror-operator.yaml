@@ -18,7 +18,7 @@
       operator_list:
       - quay-operator
       registry_user: jinzha1@redhat.com
-      dest_registry: quay02.example.opentlc.com
+      dest_registry: quay03.example.opentlc.com
       soure_operator_index: redhat-operator-index
       new_operator_index: storage-operator-index
       mirror_home: /opt/registry/mirror-storage-operator
