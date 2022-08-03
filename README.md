@@ -1,5 +1,11 @@
 # ansible-download-ocp-images
 
+In the OCP disconnected environemnt, we need to downlaod the various operator images.
+
+Here, we will use the ansible to help on this routine and tedious tasks.
+
+Below activites happen on the connected evnronment to create image tar file on the azure VM.
+
 **Prepare GIT**
 ```
 # yum install git -y
@@ -92,3 +98,16 @@ For example, we identify below 2 for operator image download:
 
 - redhat-operator-index
 - quay-operator
+
+# Install Mirror Quay
+
+
+**Below Paramters with sample values for playbook ``**
+
+- dest_registry: quay.example.opentlc.com
+- base_home: /opt/registry
+- quay_home: "{{ base_home }}/quay"
+- quay_install_home: "{{ base_home }}/install"
+- mirror_registry_download_url: https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
+
+> `dest_registry` is the target mirror registry server hostname
