@@ -60,10 +60,28 @@ You can select one value from below for the param `soure_operator_index`:
 - community-operator-index
 - redhat-marketplace-index
 
+**The playbook `02-get-operator-list.yaml` store the operators' names into file `/opt/registry/tmp/<soure_operator_index>_operator_list.json` file.**
 
 ```
 # ansible-playbook 02-get-operator-list.yaml 
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
 What is your password for registry.redhat.io?: 
+
+PLAY [localhost] ****************************************************************************************************************************************************************************
+
+TASK [get full operator list] ***************************************************************************************************************************************************************
+
+# less /opt/registry/tmp/redhat-operator-index_operator_list.json
+{
+  "name": "3scale-operator"
+}
+{
+  "name": "advanced-cluster-management"
+}
+...
+{
+  "name": "quay-operator"
+}
+...
 
 ```

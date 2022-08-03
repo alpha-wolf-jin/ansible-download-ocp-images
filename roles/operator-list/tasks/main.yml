@@ -111,6 +111,6 @@
 
 - name: Retrieve Operator List 
   ansible.builtin.shell: |
-    grpcurl -plaintext localhost:50051 api.Registry/ListPackages  >{{ base_home }}/tmp/{{ soure_operator_index }}_operator_list.txt
+    grpcurl -plaintext localhost:50051 api.Registry/ListPackages  >{{ base_home }}/tmp/{{ soure_operator_index }}_operator_list.json
   register: result
 
