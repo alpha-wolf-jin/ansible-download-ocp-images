@@ -1,22 +1,6 @@
 ---
 ## tasks file for mirroring-operator
 ##
-#- name: 01 install ansible collection
-#  ansible.builtin.shell: |
-#    ansible-galaxy collection install community.general
-#    ansible-galaxy collection install ansible.posix
-#    ansible-galaxy collection install containers.podman
-#
-
-#- name: Create dirs for Quay
-#  ansible.builtin.file:
-#    path: "{{ item }}"
-#    state: directory
-#    recurse: yes
-#  loop:
-#  - "{{ quay_home }}"
-#  - "{{ quay_install_home }}"
-#  - "{{ REMOVABLE_MEDIA_PATH }}"
 
 #- name: Install RPM
 #  ansible.builtin.yum:
@@ -40,6 +24,7 @@
     recurse: yes
   loop:
   - "{{ mirror_home }}"
+  - "{{ mirror_home }}/manifests-{{ new_operator_index }}"
 
 
 - name: Update CA & Create Auth file for Quay
@@ -131,7 +116,7 @@
 - name: Trailor Operator index 03 - save
   ansible.builtin.shell: |
     rm -f {{ new_operator_index }}.tar
-    podman save -o {{ new_operator_index }}.tar "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}"
+    podman save -o "{{ mirror_home }}/manifests-{{ new_operator_index }}/{{ new_operator_index }}.tar" "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}"
   args:
     chdir: "{{ mirror_home }}"
   register: result

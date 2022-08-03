@@ -21,7 +21,7 @@
       dest_registry: quay03.example.opentlc.com
       soure_operator_index: redhat-operator-index
       new_operator_index: storage-operator-index
-      mirror_home: /opt/registry/mirror-storage-operator
+      mirror_home: /opt/registry/mirror-quay-operator
       mirroring_operator_images: true
       uploading_operator_images: true
       prepare_cmds: false

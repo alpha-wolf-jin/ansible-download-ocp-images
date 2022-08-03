@@ -181,4 +181,6 @@ What is your password for registry.redhat.io?:
 
 ````
 
-
+>all images and configureation files are under diretory `<mirror_home>` `/opt/registry/mirror-storage-operator`
+> - Images are under `/opt/registry/mirror-storage-operator/v2`
+> - Configuration files are under `/opt/registry/mirror-storage-operator/manifests-storage-operator-index/`
