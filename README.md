@@ -21,8 +21,11 @@ git add . ; git commit -a -m "update README" ; git push -u origin main
 # 01-prepare.sh
 ```
 
+# Create Mount Point & Get operator list
+
 The disk `/dev/sdc` is freed and used to create mount point `/opt/registry`
-**Create Mount Point & Get operator list**
+
+**Detect spare disk**
 ```
 # lsblk
 NAME              MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
@@ -42,7 +45,7 @@ sdc                 8:32   0  512G  0 disk
 
 ```
 
-Below Paramters with sample values:
+**Below Paramters with sample values for playbook `02-get-operator-list.yaml`**
 
 - soure_operator_index: redhat-operator-index
 - registry_user: sample@redhat.com
@@ -50,9 +53,9 @@ Below Paramters with sample values:
 - base_home: /opt/registry
 - ocp_version: v4.10
 
-The value of the param `soure_operator_index` is one of the belows:
+You can select one value from below for the param `soure_operator_index`:
 
-- registry.redhat.io/redhat/certified-operator-index
-- registry.redhat.io/redhat/redhat-operator-index
-- registry.redhat.io/redhat/community-operator-index
-- registry.redhat.io/redhat/redhat-marketplace-index
+- certified-operator-index
+- redhat-operator-index
+- community-operator-index
+- redhat-marketplace-index
