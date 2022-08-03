@@ -6,6 +6,8 @@ Here, we will use the ansible to help on this routine and tedious tasks.
 
 Below activites happen on the connected evnronment to create image tar file on the azure VM.
 
+> Please refer to https://github.com/alpha-wolf-jin/mirror-operator for manual process. But here, we use Red Hat mirror-registry instead of docker registry.
+
 **Prepare GIT**
 ```
 # yum install git -y
