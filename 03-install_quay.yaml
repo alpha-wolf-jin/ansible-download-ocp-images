@@ -6,8 +6,8 @@
 
   tasks:
 
-  - name: mirroring-operator
+  - name: Install Mirror Quay
     include_role:
       name: install_quay
     vars:
-      dest_registry: quay02.example.opentlc.com
+      dest_registry: quay03.example.opentlc.com

@@ -10,6 +10,10 @@ Below activites happen on the connected evnronment to create image tar file on t
 ```
 # yum install git -y
 
+# git clone https://github.com/alpha-wolf-jin/ansible-download-ocp-images.git
+```
+
+```
 git init
 git add README.md
 git commit -m "first commit"
@@ -104,10 +108,30 @@ For example, we identify below 2 for operator image download:
 
 **Below Paramters with sample values for playbook ``**
 
-- dest_registry: quay.example.opentlc.com
+- dest_registry: quay03.example.opentlc.com
 - base_home: /opt/registry
 - quay_home: "{{ base_home }}/quay"
 - quay_install_home: "{{ base_home }}/install"
 - mirror_registry_download_url: https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
 
 > `dest_registry` is the target mirror registry server hostname
+
+
+```
+# cat 03-install_quay.yaml 
+---
+- hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - name: Install Mirror Quay
+    include_role:
+      name: install_quay
+    vars:
+      dest_registry: quay03.example.opentlc.com
+
+# ansible-playbook 03-install_quay.yaml 
+```
