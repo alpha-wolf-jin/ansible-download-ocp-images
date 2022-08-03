@@ -59,3 +59,11 @@ You can select one value from below for the param `soure_operator_index`:
 - redhat-operator-index
 - community-operator-index
 - redhat-marketplace-index
+
+
+```
+# ansible-playbook 02-get-operator-list.yaml 
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+What is your password for registry.redhat.io?: 
+
+```
