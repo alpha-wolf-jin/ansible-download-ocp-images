@@ -10,4 +10,4 @@
     include_role:
       name: install_quay
     vars:
-      dest_registry: quay03.example.opentlc.com
+      dest_registry: quay.example.opentlc.com

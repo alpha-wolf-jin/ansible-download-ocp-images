@@ -13,13 +13,8 @@
 
   - name: mirroring-operator
     include_role:
-      name: mirroring-operator
+      name: mirror-registry
     vars:
-      operator_list:
-      - cluster-logging
-      - compliance-operator
-      - local-storage-operator
-      - elasticsearch-operator
       registry_user: jinzha1@redhat.com
       dest_registry: quay.example.opentlc.com
       soure_operator_index: redhat-operator-index

@@ -2,6 +2,20 @@
 ## tasks file for mirroring-operator
 ##
 
+- name: Retrieve quay user & password from file
+  set_fact:
+    quay_user: init
+    quay_pwd: "{{ lookup('file', quay_install_home + '/quay_password') | regex_replace('^init\\s+\\:\\s+(.*)$', '\\1') }}"
+
+
+- name: Update CA & Create Auth file for Quay
+  ansible.builtin.shell: |
+    podman login --authfile "{{ reg_creds }}" -u {{ quay_user }} -p {{ quay_pwd }} {{ dest_registry }}:{{ dest_registry_port }}
+    podman login --authfile "{{ reg_creds }}" -u {{ registry_user }} -p {{ registry_pwd }} registry.redhat.io
+  args:
+    chdir: "{{ mirror_home }}"
+
+
 - name: Morring cluster images to local disk
   block:
   - name: Mirror the cluster images to local disk
@@ -19,44 +33,44 @@
     delay: 15
   
   - debug: var=result
-  when: mirroring_cluster_images
+#  when: mirroring_cluster_images
 
 
-- name: Morring Operators' images to local disk
-  block:
-  - name: Mirror the cluster images to local disk
-    ansible.builtin.shell: |
-      oc adm catalog mirror \
-      "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}" \
-      file:///local/index -a "{{ reg_creds }}" --index-filter-by-os='linux/amd64' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_operators.log"
-    args:
-      chdir: "{{ mirror_home }}"
-    register: result
-    until: 
-    - "'wrote mirroring manifests ' in result.stdout"
-    - "'To upload local images to a registry' in result.stdout"
-    retries: 3
-    delay: 15
-  
-  - debug: var=result
-  when: mirroring_operator_images
-
-
-- name: Upload the Operators' images to quay mirror registry from local disk
-  block:
-  - name: Mirror the cluster images to local disk
-    ansible.builtin.shell: |
-      oc adm catalog mirror \
-      file://local/index/olm-mirror/{{ new_operator_index }}:{{ ocp_version }} \
-      {{ dest_registry }}:{{ dest_registry_port }}/olm-mirror \
-      -a {{ reg_creds }} --index-filter-by-os='.*' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/upload_operators.log"
-    args:
-      chdir: "{{ mirror_home }}"
-    register: result
-    until: 
-    - "'wrote mirroring manifests to ' in result.stdout"
-    retries: 3
-    delay: 15
-  
-  - debug: var=result
-  when: uploading_operator_images
+#- name: Morring Operators' images to local disk
+#  block:
+#  - name: Mirror the cluster images to local disk
+#    ansible.builtin.shell: |
+#      oc adm catalog mirror \
+#      "{{ dest_registry }}:{{ dest_registry_port }}/olm-mirror/{{ new_operator_index }}:{{ ocp_version }}" \
+#      file:///local/index -a "{{ reg_creds }}" --index-filter-by-os='linux/amd64' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/mirror_operators.log"
+#    args:
+#      chdir: "{{ mirror_home }}"
+#    register: result
+#    until: 
+#    - "'wrote mirroring manifests ' in result.stdout"
+#    - "'To upload local images to a registry' in result.stdout"
+#    retries: 3
+#    delay: 15
+#  
+#  - debug: var=result
+#  when: mirroring_operator_images
+#
+#
+#- name: Upload the Operators' images to quay mirror registry from local disk
+#  block:
+#  - name: Mirror the cluster images to local disk
+#    ansible.builtin.shell: |
+#      oc adm catalog mirror \
+#      file://local/index/olm-mirror/{{ new_operator_index }}:{{ ocp_version }} \
+#      {{ dest_registry }}:{{ dest_registry_port }}/olm-mirror \
+#      -a {{ reg_creds }} --index-filter-by-os='.*' | tee "{{ mirror_home }}/manifests-{{ new_operator_index }}/upload_operators.log"
+#    args:
+#      chdir: "{{ mirror_home }}"
+#    register: result
+#    until: 
+#    - "'wrote mirroring manifests to ' in result.stdout"
+#    retries: 3
+#    delay: 15
+#  
+#  - debug: var=result
+#  when: uploading_operator_images
