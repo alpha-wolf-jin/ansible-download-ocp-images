@@ -26,10 +26,15 @@
   - "{{ mirror_home }}"
   - "{{ mirror_home }}/manifests-{{ new_operator_index }}"
 
-
-- name: Update CA & Create Auth file for Quay
+- name: Create Auth file for Quay
   ansible.builtin.shell: |
     podman login --authfile "{{ reg_creds }}" -u {{ quay_user }} -p {{ quay_pwd }} {{ dest_registry }}:{{ dest_registry_port }}
+  args:
+    chdir: "{{ mirror_home }}"
+
+
+- name: Create Auth file for registry.redhat.io
+  ansible.builtin.shell: |
     podman login --authfile "{{ reg_creds }}" -u {{ registry_user }} -p {{ registry_pwd }} registry.redhat.io
   args:
     chdir: "{{ mirror_home }}"

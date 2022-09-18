@@ -53,21 +53,21 @@
 - set_fact:
     src_str: "{{ quay_install_result.stdout_lines[-1] }}"
 
-- name: Extract Password from the installation log
-  register: results
-  args:
-    stdin: |
-      import re
-      s1 = re.escape("{{ src_str }}")
-      s2 = re.findall('init\\\,\\\ \w+', s1)
-      search_pattern = '\s+(.+?)$'
-      f = re.search(search_pattern, s2[-1]).group(1).strip()
-      print(f)
-  command: /usr/bin/python3
-
-- debug:
-    msg: "{{ results.stdout }}"
-
+#- name: Extract Password from the installation log
+#  register: results
+#  args:
+#    stdin: |
+#      import re
+#      s1 = re.escape("{{ src_str }}")
+#      s2 = re.findall('init\\\,\\\ \w+', s1)
+#      search_pattern = '\s+(.+?)$'
+#      f = re.search(search_pattern, s2[-1]).group(1).strip()
+#      print(f)
+#  command: /usr/bin/python3
+#
+#- debug:
+#    msg: "{{ results.stdout }}"
+#
 - name: Set quay credentail parms' value
   set_fact:
     quay_user: init
