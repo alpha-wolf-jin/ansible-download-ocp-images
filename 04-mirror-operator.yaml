@@ -16,18 +16,12 @@
       name: mirroring-operator
     vars:
       operator_list:
-      - odf-csi-addons-operator
-      - odf-lvm-operator
-      - odf-multicluster-orchestrator
-      - odf-operator
-      - mcg-operator
-      - ocs-operator
-      - local-storage-operator
+      - windows-machine-config-operator
       registry_user: jinzha1@redhat.com
       dest_registry: quay.example.opentlc.com
       soure_operator_index: redhat-operator-index
-      new_operator_index: odf-operator-index
-      mirror_home: /opt/registry/mirror-odf-operator
+      new_operator_index: windows-operator-index
+      mirror_home: /opt/registry/mirror-win-operator
       mirroring_operator_images: true
       uploading_operator_images: true
       prepare_cmds: false
@@ -46,3 +40,10 @@
       #- local-storage-operator
       #- elasticsearch-operator
       #
+      #- odf-csi-addons-operator
+      #- odf-lvm-operator
+      #- odf-multicluster-orchestrator
+      #- odf-operator
+      #- mcg-operator
+      #- ocs-operator
+      #- local-storage-operator

@@ -3,7 +3,8 @@
   tasks:
 
   - set_fact:
-      contents: "{{ lookup('file', '/opt/registry/install/test') | string }}"
+      contents: "{{ lookup('file', '/opt/registry/install/quay_password.orig') | string }}"
+      #contents: "{{ lookup('file', '/opt/registry/install/test') | string }}"
             
   - name: test
     register: results
@@ -20,8 +21,18 @@
       msg: "{{ results.stdout }}"
 
 
-  - debug:
-      msg: "{{ contents | regex_replace('^.*init\\,\\s+(.*)\\)\\s+.*$', '\\1') }}"
+#  - name: Set quay credentail parms' value
+#    set_fact:
+#      quay_user: init
+#      quay_pwd: "{{ quay_install_result.stdout_lines[-1] | regex_replace('^.*init\\,\\s+(.*)\\)\\s+.*$', '\\1') }}"
+#  
+
+#    "msg": "init : time=\"2022-10-06 03:06:36\" level=info msg=\"Quay is available at https://quay.example.opentlc.com:8443 with credentials (init, 1Ts76q0a928rLtCimXY5AKzDun3flIw4)\""
+
+  - name: Set quay credentail parms' value
+    debug:
+      msg: "{{ contents | regex_replace('^.*init\\,\\s+(.*)\\).*$', '\\1') }}"
+      #msg: "{{ contents | regex_replace('^.*init\\,\\s+(.*)\\)\\s+.*$', '\\1') }}"
       #msg: "{{ contents | regex_replace('^.*init,\b+.*?\\)\b*$', '\\1') }}"
 
 #        s = "credentials (init, Pp2i6s8qb9cvU5DeVd7u4GMCj3W0F1KB) "

@@ -71,7 +71,7 @@
 - name: Set quay credentail parms' value
   set_fact:
     quay_user: init
-    quay_pwd: "{{ quay_install_result.stdout_lines[-1] | regex_replace('^.*init\\,\\s+(.*)\\)\\s+.*$', '\\1') }}"
+    quay_pwd: "{{ quay_install_result.stdout_lines[-1] | regex_replace('^.*init\\,\\s+(.*)\\).*$', '\\1') }}"
 
 
 - name: Copy PWD into file
