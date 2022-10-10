@@ -18,7 +18,7 @@
     vars:
       soure_operator_index: redhat-operator-index
       registry_user: jinzha1@redhat.com
-      disk_dev: /dev/sdc
+      disk_dev: /dev/vdd
 
 
 

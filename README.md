@@ -184,3 +184,22 @@ What is your password for registry.redhat.io?:
 >all images and configureation files are under diretory `<mirror_home>` `/opt/registry/mirror-storage-operator`
 > - Images are under `/opt/registry/mirror-storage-operator/v2`
 > - Configuration files are under `/opt/registry/mirror-storage-operator/manifests-storage-operator-index/`
+
+# Updating the global cluster pull secret
+
+```
+# oc get secret/pull-secret -n openshift-config --template='{{index .data ".dockerconfigjson" | base64decode}}' >/tmp/pull_secret
+
+# oc registry login --registry="helper.example.com:8443" --auth-basic="init:nYZx8hXBo2v1CUc6zsL4T50fQHm3w79l" --to=/tmp/pull_secret
+
+# oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=/tmp/pull_secret
+```
+
+# Adding certificate authorities to the cluster
+
+```
+# oc create configmap registry-cas -n openshift-config --from-file=helper.example.com..8443=/opt/registry/quay/quay-rootCA/rootCA.pem
+
+# oc patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"registry-cas"}}}' --type=merge
+
+```

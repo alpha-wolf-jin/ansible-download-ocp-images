@@ -18,7 +18,7 @@
       operator_list:
       - windows-machine-config-operator
       registry_user: jinzha1@redhat.com
-      dest_registry: quay.example.opentlc.com
+      dest_registry: helper.example.com
       soure_operator_index: redhat-operator-index
       new_operator_index: windows-operator-index
       mirror_home: /opt/registry/mirror-win-operator
