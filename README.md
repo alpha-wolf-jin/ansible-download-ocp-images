@@ -203,3 +203,41 @@ What is your password for registry.redhat.io?:
 # oc patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"registry-cas"}}}' --type=merge
 
 ```
+
+# update cluster for private repo
+
+```
+# oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+
+# cat /opt/registry/mirror-win-operator/manifests-windows-operator-index/catalogSource.yaml 
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: windows-operator-index
+  namespace: openshift-marketplace
+spec:
+  image: helper.example.com:8443/olm-mirror/windows-operator-index:v4.10
+  sourceType: grpc
+
+# oc apply -f catalogSource.yaml
+
+# cat /opt/registry/mirror-win-operator/manifests-windows-operator-index/imageContentSourcePolicy.yaml
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  labels:
+    operators.openshift.org/catalog: "true"
+  name: windows-operator-index-0
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - helper.example.com:8443/olm-mirror/openshift4-wincw-windows-machine-config-operator-bundle
+    source: registry.redhat.io/openshift4-wincw/windows-machine-config-operator-bundle
+  - mirrors:
+    - helper.example.com:8443/olm-mirror/openshift4-wincw-windows-machine-config-rhel8-operator
+    source: registry.redhat.io/openshift4-wincw/windows-machine-config-rhel8-operator
+
+# oc apply -f imageContentSourcePolicy.yaml
+
+```
